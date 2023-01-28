@@ -8,3 +8,8 @@ This is privelege escalated due to Googleweblights automating caching of the RSS
 it also uses Facebook as a backend proxy request grabber so that this looks like Google/Facebook traffic.
 
 though your cookies are involved in the Facebook request
+
+
+!!!THIS IS JUST A TEST, USUALLY FETCHES NOTHING!!!
+
+!!!Binary injection schemes work better at hiding malicious code!!!
