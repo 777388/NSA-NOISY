@@ -1,24 +1,33 @@
+import os
 import urllib.parse
 import random
-import requests
-import base64
+import sys
+print("python3 noisy.py url")
+url = "https://developers.facebook.com/tools/debug/echo/?q=http://googleweblight.com/?lite_url=https://www.nsa.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1282&max=50000&s=1000000&source=wax-m"
 
-def add_noise_to_url(url: str) -> str:
-    parsed_url = urllib.parse.urlparse(url)
-    query = urllib.parse.parse_qs(parsed_url.query)
-    for key, value in query.items():
-        # Add random byte noise to the value
-        noise = bytes([random.randint(0, 255) for _ in range(3)])
-        noise_str = base64.b64encode(noise).decode()
-        query[key] = [value[0] + noise_str]
-    # Update the query string and return the modified URL
-    new_query = urllib.parse.urlencode(query, doseq=True)
-    return parsed_url._replace(query=new_query).geturl()
+parsed_url = urllib.parse.urlsplit(url)
+query = parsed_url.query
 
-cookies = {'c_user': '[cookie]', 'xs': '[cookie]'}
-original_url = "https://developers.facebook.com/tools/debug/echo/?q=http://googleweblight.com/?lite_url=https://www.nsa.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1282&max=20&s=1&source=wax-m"
-noisy_url = add_noise_to_url(original_url)
+# creates a dictionary of parameters and their values
+parameters = urllib.parse.parse_qs(query)
+
+noise_value = os.urandom(random.randint(32,128))
+
+for key, value in parameters.items():
+    value =  bytes(value[0], "utf-8")
+    # add the noise value to the value
+    value += noise_value
+    parameters[key] = value
+
+# rebuild the query string with the modified parameters
+query = urllib.parse.urlencode(parameters, doseq=True)
+
+# rebuild the URL with the modified query string
+url = urllib.parse.urlunsplit((parsed_url.scheme, parsed_url.netloc, parsed_url.path, query, parsed_url.fragment))
+
+curl_command = f"curl -b 'c_user=cookie; xs=cookie' -X GET {url} "
+r = os.popen(curl_command).read()
+print(r)
 
 
-r = requests.get(noisy_url, allow_redirects=False, cookies=cookies)
-print(r.text)
+
